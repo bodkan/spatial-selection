@@ -1,3 +1,9 @@
+# This script generates SLiM simulation scripts for generating data of
+# the spread of a beneficial allele throughout a population. The
+# parameters `max_distance` and `max_spread` were selected based on
+# neutral simulation runs performed by `02_neutral_scripts.R` and
+# `03_neutral_run.sh`.
+
 library(spammr)
 
 model <- load("europe/")

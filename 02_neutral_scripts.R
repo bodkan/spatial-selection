@@ -1,3 +1,10 @@
+# This script generates SLiM simulation scripts to explore the
+# parameters influencing the spatial spread of individual across their
+# population boundary. There are many ways how this could be
+# parametrized, but here we are trying to find a combination of
+# parameters that will lead to a "reasonably uniform" spread of
+# individuals.
+
 library(spammr)
 
 model <- load("europe/")

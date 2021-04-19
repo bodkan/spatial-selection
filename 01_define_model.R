@@ -1,3 +1,5 @@
+devtools::install_github("bodkan/spammr", ref = "624b567")
+
 library(spammr)
 
 world <- map(
@@ -15,7 +17,7 @@ europe <- region("Europe", world, coords = list(
 
 # create a single population
 pop <- population(
-  "pop", parent = "ancestor", Ne = 20000,
+  "pop", parent = "ancestor", N = 20000,
   world = world, region = europe
 )
 
@@ -24,6 +26,10 @@ model <- compile(
   pop,
   model_dir = "europe",
   resolution = 10, # 10 km per pixel
-  gen_time = 30, # 30 years per generation
+  gen_time = 30,   # 30 years per generation
   overwrite = TRUE
 )
+
+# locations of generated SLiM scripts and output files
+dir.create("slim/")
+dir.create("results/")

@@ -3,20 +3,22 @@ initialize() {
   initializeSLiMOptions(keepPedigrees = T, dimensionality = "xy");
   initializeTreeSeq();
 
+  defineConstant("SIM_SEED", getSeed());
+
+  // offspring spread
+  defineConstant("SPREAD", asFloat(2.5));
+
   // maximum interaction/competition distance
-  defineConstant("MAX_DISTANCE", asFloat(50));
+  defineConstant("MAX_INTERACTION", asFloat(25));
 
   // TODO: make both of these parametrizable at some point
   // spatial competition
-  initializeInteractionType(1, "xy", reciprocal = T, maxDistance = MAX_DISTANCE);
+  initializeInteractionType(1, "xy", reciprocal = T, maxDistance = MAX_INTERACTION);
   // spatial mate choice
-  initializeInteractionType(2, "xy", reciprocal = T, maxDistance = MAX_DISTANCE);
+  initializeInteractionType(2, "xy", reciprocal = T, maxDistance = MAX_INTERACTION);
 
-  // offspring spread
-  defineConstant("MAX_SPREAD", asFloat(5));
-
-  defineConstant("MODEL_DIR", "/Users/martin_petr/projects/spatial-selection/europe");
-  defineConstant("OUTPUT_DIR", "/Users/martin_petr/projects/spatial-selection/outputs");
+  defineConstant("MODEL_DIR", "europe/");
+  defineConstant("OUTPUT_PREFIX", "results/neutral_distance250_spread25");
 
   // load model definition tables
   defineConstant("SPLIT_TABLE", read_table(paste0(MODEL_DIR, "/splits.tsv")));
@@ -39,7 +41,7 @@ initialize() {
   defineConstant("N_MARKERS", 0);
   defineConstant("TRACK_ANCESTRY", N_MARKERS > 0);
 
-  defineConstant("SAVE_LOCATIONS", F);
+  defineConstant("SAVE_LOCATIONS", T);
 
   defineConstant("SIM_START", T_BURNIN); catn("SIM_START: " + SIM_START);
   defineConstant("SIM_END", T_BURNIN + T_LENGTH); catn("SIM_END: " + SIM_END);
@@ -96,7 +98,7 @@ initialize() {
   g1.mutationTypes[mut_ids].mutationStackPolicy = "l";
   g1.mutationTypes[mut_ids].mutationStackGroup = 0;
 
-  defineConstant("SEQ_LENGTH", asInteger(100));
+  defineConstant("SEQ_LENGTH", asInteger(1));
   initializeGenomicElement(g1, 0, SEQ_LENGTH - 1);
 
   initializeRecombinationRate(0);
@@ -108,7 +110,7 @@ initialize() {
 1 {
   // setup the first population (id = 0)
   i = 0;
-  sim.addSubpop(i, pop_param("Ne", i));
+  sim.addSubpop(i, pop_param("N", i));
   set_map(i, sim.generation);
   set_coordinates(get_pop(i).individuals, i);
   add_markers(i);
@@ -249,7 +251,7 @@ s6 late() {
 s7 late() {
   catn("--------------------------------------------------");
   log_output("simulation finished");
-  filename = paste0(OUTPUT_DIR, "/tree_seq.trees");
+  filename = paste0(OUTPUT_PREFIX, "_tree_seq.trees");
   sim.treeSeqOutput(filename);
   sim.simulationFinished();
 }
@@ -297,7 +299,7 @@ modifyChild() {
 
   // for spatially overlapping admixture and non-migrant offspring,
   // propose location in the neighborhood of one of its parents
-  pos = parent1.spatialPosition + runif(2, -MAX_SPREAD, MAX_SPREAD);
+  pos = parent1.spatialPosition + rnorm(2, 0, SPREAD);
 
   // make sure that offspring is generated in allowed locations on the map
   // (within it's population bounds and not in an inaccessible location)
@@ -315,9 +317,9 @@ modifyChild() {
 
 // Read table of population splits, migrations, etc.
 function (i) read_table(s$ path) {
-  lines = readFile(path);
-  if (length(lines) <= 1) return(NULL);
+  if (!fileExists(path)) return(NULL);
 
+  lines = readFile(path);
   matrix = sapply(
     lines[1 : (size(lines) - 1)], "asInteger(strsplit(applyValue, '\t'));",
     simplify="matrix"
@@ -327,14 +329,14 @@ function (i) read_table(s$ path) {
 
 // Write a header of a locations table to a locations file
 function (void) write_locations_header(void) {
-  filename = paste0(OUTPUT_DIR, "/ind_locations.tsv.gz");
+  filename = paste0(OUTPUT_PREFIX, "_ind_locations.tsv.gz");
   header_str = "t\tpop\tind\tx\ty\tsampled";
   writeFile(filename, header_str, compress = T);
 }
 
 // Write information about a given individual to a locations file
 function(void) write_locations(lifso<Individual>$ ind) {
-  filename = paste0(OUTPUT_DIR, "/ind_locations.tsv.gz");
+  filename = paste0(OUTPUT_PREFIX, "_ind_locations.tsv.gz");
   ind_str = paste(
     T_BURNIN + T_LENGTH - sim.generation,
     ind.subpopulation.id,
@@ -350,7 +352,7 @@ function(void) write_locations(lifso<Individual>$ ind) {
 function (void) write_ancestries_header(void) {
   for (pop in pop_param("pop")) {
     header_str = paste(c("gen", NAMES[pop_param("pop")]), sep = "\t");
-    filename = paste0(OUTPUT_DIR, "/ancestry_", NAMES[pop], ".tsv");
+    filename = paste0(OUTPUT_PREFIX, "_ancestry_", NAMES[pop], ".tsv");
     writeFile(filename, header_str);
   }
 }
@@ -359,7 +361,7 @@ function (void) write_ancestries_header(void) {
 function (void) write_ancestries(void) {
   for (pop in sim.subpopulations) {
     line = paste(SIM_END - sim.generation, calc_ancestry(pop), sep = "\t");
-    filename = paste0(OUTPUT_DIR, "/ancestry_", NAMES[pop.id], ".tsv");
+    filename = paste0(OUTPUT_PREFIX, "_ancestry_", NAMES[pop.id], ".tsv");
     writeFile(filename, line, append = T);
   }
 }
@@ -382,7 +384,7 @@ function (void) log_output(s$ str) {
 
 // Assign a spatial map to a given population
 function (void) set_map(i$ i, i$ generation) {
-  if (sim.generation == 1)
+  if (generation == 1)
     img = MAPS[0];
   else
     img = MAPS[maps_param("pop") == i & T_MAPS == generation];
@@ -394,9 +396,9 @@ function (void) set_map(i$ i, i$ generation) {
 // Split population from the source specified in an input table
 function (void) split_pop(i$ i) {
   source = pop_param("source", i);
-  Ne= pop_param("Ne", i);
+  N = pop_param("N", i);
   log_output("split of " + NAMES[i] + "(" + i + ")" + " from " + NAMES[source] + "(" + source + ")");
-  sim.addSubpopSplit(i, Ne, get_pop(source));
+  sim.addSubpopSplit(i, N, get_pop(source));
 }
 
 // Set the migration rate from a populaion 'from' to a population 'to'
@@ -416,7 +418,7 @@ function (void) set_admixture(i$ from, i$ to, f$ rate, [i$ span = 1]) {
 function (void) add_markers(i$ pop) {
   if (TRACK_ANCESTRY) {
     log_output("adding " + NAMES[pop] + "(" + pop + ")" + " ancestry markers");
-    get_pop(pop).genomes.addNewMutation(pop, 0.0, seq(0, 100 - 1, by = asInteger(100 / N_MARKERS)));
+    get_pop(pop).genomes.addNewMutation(pop, 0.0, seq(0, 1 - 1, by = asInteger(1 / N_MARKERS)));
   }
 }
 
@@ -451,7 +453,7 @@ function (numeric) pop_param(s$ col, [Ni$ pop_i = NULL], [Ns$ present = NULL]) {
     stop("Both population ID and filtering criterion cannot be specified.");
 
   // column names allowed
-  columns = c("pop", "Ne", "source", "tsplit", "tremove");
+  columns = c("pop", "N", "source", "tsplit", "tremove");
 
   // lookup column name number for indexing into a populations matrix
   col_i = which(columns == col) ;
@@ -517,58 +519,4 @@ function (numeric) maps_param(s$ col, [Ni$ pop_i = NULL], [Ni$ time = NULL]) {
   val = drop(MAP_TABLE[indices, col_i]);
 
   return val[which(val != -1)];
-}
-1 late() {
-  defineConstant("LOCATION", asFloat(c(194,140)));
-  defineConstant("FREQ", asFloat(0.1));
-  defineConstant("S", asFloat(0.1));
-  defineConstant("T_ONSET", SIM_END - asInteger(round(29500 / GEN_TIME)));
-  defineConstant("POP", which(NAMES == "pop"));
-
-  catn("T_ONSET: " + T_ONSET);
-
-  sim.rescheduleScriptBlock(s999, generations = T_ONSET);
-  sim.rescheduleScriptBlock(s1000, generations = T_ONSET:SIM_END);
-
-  write_genotypes_header();
-}
-
-s999 late() {
-  if (sim.generation == T_ONSET) {
-    log_output("Introducing a beneficial mutation");
-    if (get_pop(POP).spatialMapValue("world", LOCATION) == 1.0)
-      stop("Location of selection start outside of the population boundary!\n");
-
-    all_genomes = get_pop(POP).genomes;
-    sampled_genomes = sample(all_genomes, asInteger(length(all_genomes) * FREQ));
-    sampled_genomes.addNewMutation(get_pop(POP).id, S, asInteger(SEQ_LENGTH / 2));
-    unique(sampled_genomes.individual).setSpatialPosition(LOCATION + runif(2, -MAX_SPREAD, MAX_SPREAD));
-  }
-}
-
-// save location of each individual
-s1000 late() {
-  for (ind in sim.subpopulations.individuals) {
-    write_genotypes(ind);
-  }
-}
-
-function (void) write_genotypes_header(void) {
-  filename = paste0(OUTPUT_DIR, "/ind_gt_locations.tsv.gz");
-  header_str = "t\tpop\tind\tx\ty\tsampled\tgt";
-  writeFile(filename, header_str, compress = T);
-}
-
-// Write information about a given individual to a locations file
-function(void) write_genotypes(lifso<Individual>$ ind) {
-  filename = paste0(OUTPUT_DIR, "/ind_gt_locations.tsv.gz");
-  ind_str = paste(
-    T_BURNIN + T_LENGTH - sim.generation,
-    ind.subpopulation.id,
-    ind.pedigreeID,
-    ind.spatialPosition,
-    asInteger(!isNULL(ind.getValue("sampled"))),
-    sep = "\t"
-  );
-  writeFile(filename, ind_str, append = T, compress = T);
 }

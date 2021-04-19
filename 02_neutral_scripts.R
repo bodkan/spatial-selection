@@ -5,6 +5,8 @@
 # parameters that will lead to a "reasonably uniform" spread of
 # individuals.
 
+devtools::install_github("bodkan/spammr", ref = "624b567")
+
 library(spammr)
 
 model <- load("europe/")
@@ -28,17 +30,3 @@ for (max_interaction in c(250, 500, 750, 1000)) {
     )
   }
 }
-
-
-max_interaction = 1000
-spread = 50
-    prefix <- sprintf("neutral_distance%d_spread%d", max_interaction, spread)
-    run(
-      model, burnin = 30, sim_length = 30000,
-      recomb_rate = 0, seq_length = 1, # single locus
-      max_interaction = max_interaction, spread = spread,
-      save_locations = TRUE,
-      output_prefix = file.path("results", prefix),
-      script_path = file.path("slim", paste0(prefix, ".slim")),
-      how = "gui"
-    )

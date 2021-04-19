@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-parallel -j 1 slim {} ::: slim/neutral_*.slim
+parallel -j 0 slim {} ::: slim/neutral_*.slim

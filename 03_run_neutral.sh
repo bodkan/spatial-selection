@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-parallel -j 8 slim {} ::: slim/neutral_*.slim
+parallel -j8 'slim {} > results/{/.}.log' ::: slim/neutral_*.slim

@@ -43,7 +43,7 @@ max_interaction <- 250; spread <- 25
 for (s in c(.001, .002, .003, .004, .005, .01, .02, .03, .04, .05)) {
   for (time in c(20000, 15000, 10000, 5000)) {
     for (i in 1:nrow(locations_df)) {
-      prefix <- sprintf("selection_%s_s%.2f_time%d",
+      prefix <- sprintf("selection_%s_s%.3f_time%d",
                         gsub(" ", "", locations_df[i, ]$name), s, time)
 
       # convert geographic coordinates into pixel coordinates

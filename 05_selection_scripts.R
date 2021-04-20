@@ -7,8 +7,9 @@
 library(spammr)
 library(sf)
 library(magrittr)
+library(ggplot2)
 
-model <- load("europe/")
+model <- load("model-europe/")
 
 # define locations of origin of beneficial mutations
 locations_df <- dplyr::tribble(
@@ -23,12 +24,14 @@ locations_df <- dplyr::tribble(
 locations_sf <- locations_df %>%
   st_as_sf(coords = c("lon", "lat"), crs = 4326) %>%
   st_transform(crs = st_crs(model$world))
+pdf(file.path("figures", "selection_origins.pdf"), width = 12, height = 8)
 ggplot() +
   geom_sf(data = model$world) +
   geom_sf(data = locations_sf, aes(color = name), size = 5) +
   guides(color = guide_legend("")) +
-  theme_minimal()
-ggsave(file.path("figures", "selection_origins.pdf"), width = 12, height = 8)
+  theme_minimal() +
+  ggtitle("Locations of the origins of beneficial alleles")
+dev.off()
 
 # spatial distribution parameters established via `02_neutral_scripts.R`
 max_interaction <- 250; spread <- 25
@@ -39,9 +42,9 @@ max_interaction <- 250; spread <- 25
 # - locations of origins of the mutation
 for (s in c(.001, .002, .003, .004, .005, .01, .02, .03, .04, .05)) {
   for (time in c(20000, 15000, 10000, 5000)) {
-    for (location_i in 1:nrow(locations_df)) {
+    for (i in 1:nrow(locations_df)) {
       prefix <- sprintf("selection_%s_s%.2f_time%d",
-                        gsub(" ", "", locations[i, ]$name), s, time)
+                        gsub(" ", "", locations_df[i, ]$name), s, time)
 
       # convert geographic coordinates into pixel coordinates
       lon <- locations_df[i, ]$lon
@@ -53,7 +56,7 @@ for (s in c(.001, .002, .003, .004, .005, .01, .02, .03, .04, .05)) {
       selection_script <- script(
         system.file("extdata", "selection.slim", package = "spammr"), 
         s = s, time = time,
-        coord = coord, # location of origin
+        coord = coord,
         origin = "pop"
       )
 

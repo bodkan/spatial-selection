@@ -1,5 +1,3 @@
-devtools::install_github("bodkan/spammr", ref = "624b567")
-
 library(spammr)
 
 world <- map(
@@ -24,7 +22,7 @@ pop <- population(
 # compile the model specification and the single spatial map
 model <- compile(
   pop,
-  model_dir = "europe",
+  model_dir = "model-europe",
   resolution = 10, # 10 km per pixel
   gen_time = 30,   # 30 years per generation
   overwrite = TRUE

@@ -1,5 +1,5 @@
 install.packages(c("devtools", "sf", "tidyverse"))
-devtools::install_github("bodkan/spammr", ref = "2a652c6")
+devtools::install_github("bodkan/spammr", ref = "d6f95bf")
 
 # locations of generated SLiM scripts and output files
 dir.create("slim/")

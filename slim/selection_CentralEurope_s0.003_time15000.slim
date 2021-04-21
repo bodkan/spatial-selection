@@ -1,7 +1,9 @@
 initialize() {
-  // TODO: make pedigrees and tree sequences optional in a run() interface
-  initializeSLiMOptions(keepPedigrees = T, dimensionality = "xy");
-  initializeTreeSeq();
+  defineConstant("KEEP_PEDIGREES", F);
+  defineConstant("TS_RECORDING", F);
+
+  initializeSLiMOptions(keepPedigrees = KEEP_PEDIGREES, dimensionality = "xy");
+  if (TS_RECORDING) initializeTreeSeq();
 
   defineConstant("SIM_SEED", getSeed());
 
@@ -34,8 +36,8 @@ initialize() {
   defineConstant("HEIGHT", MAPS[0].height); catn("HEIGHT: " + HEIGHT);
 
   defineConstant("GEN_TIME", 30);
-  defineConstant("T_BURNIN", 1); catn("T_BURNIN: " + T_BURNIN);
-  defineConstant("T_LENGTH", 1000); catn("T_LENGTH: " + T_LENGTH);
+  defineConstant("T_BURNIN", 33); catn("T_BURNIN: " + T_BURNIN);
+  defineConstant("T_LENGTH", 500); catn("T_LENGTH: " + T_LENGTH);
 
   // number of ancestry-informative neutral markers
   defineConstant("N_MARKERS", 0);
@@ -239,7 +241,7 @@ s6 late() {
   if (sim.generation % 10 == 0) {
     inds = sapply(sim.subpopulations, "sample(applyValue.individuals, 1);");
     inds.setValue("sampled", 1);
-    sim.treeSeqRememberIndividuals(inds);
+    if (TS_RECORDING) sim.treeSeqRememberIndividuals(inds);
   }
   // save location of each individual present
   for (ind in sim.subpopulations.individuals) {
@@ -251,8 +253,12 @@ s6 late() {
 s7 late() {
   catn("--------------------------------------------------");
   log_output("simulation finished");
-  filename = paste0(OUTPUT_PREFIX, "_tree_seq.trees");
-  sim.treeSeqOutput(filename);
+
+  if (TS_RECORDING) {
+     filename = paste0(OUTPUT_PREFIX, "_tree_seq.trees");
+     sim.treeSeqOutput(filename);
+  }
+
   sim.simulationFinished();
 }
 
@@ -337,10 +343,12 @@ function (void) write_locations_header(void) {
 // Write information about a given individual to a locations file
 function(void) write_locations(lifso<Individual>$ ind) {
   filename = paste0(OUTPUT_PREFIX, "_ind_locations.tsv.gz");
+  if (KEEP_PEDIGREES) id = ind.pedigreeID;
+  else id = -1;
   ind_str = paste(
-    T_BURNIN + T_LENGTH - sim.generation,
+    SIM_END - sim.generation,
     ind.subpopulation.id,
-    ind.pedigreeID,
+    id,
     ind.spatialPosition,
     asInteger(!isNULL(ind.getValue("sampled"))),
     sep = "\t"
@@ -521,15 +529,20 @@ function (numeric) maps_param(s$ col, [Ni$ pop_i = NULL], [Ni$ time = NULL]) {
   return val[which(val != -1)];
 }
 initialize() {
-  initializeMutationType("m999", 1.0, "f", 0.5); // introduced mutation
+  // introduced mutation
+  initializeMutationType("m999", 1.0, "f", 0.5);
+  m999.convertToSubstitution = F;
 }
 
 1 late() {
   defineConstant("LOCATION", asFloat(c(194,185)));
   defineConstant("S", asFloat(0.003));
-  defineConstant("T_MUTATION", SIM_END - asInteger(round(15000 / GEN_TIME)));
   defineConstant("POP", which(NAMES == "pop"));
 
+  defineConstant("T_ABS_MUTATION", asInteger(round(15000 / GEN_TIME)));
+  defineConstant("T_MUTATION", SIM_END - T_ABS_MUTATION);
+
+  catn("T_ABS_MUTATION: " + T_ABS_MUTATION);
   catn("T_MUTATION: " + T_MUTATION);
 
   sim.rescheduleScriptBlock(s999, generations = T_MUTATION);
@@ -594,7 +607,7 @@ function (void) write_genotypes_header(void) {
 function(void) write_genotypes(lifso<Individual>$ ind) {
   filename = paste0(OUTPUT_PREFIX, "_ind_gt_locations.tsv.gz");
   ind_str = paste(
-    T_BURNIN + T_LENGTH - sim.generation,
+    SIM_END - sim.generation,
     ind.spatialPosition,
     ind.countOfMutationsOfType(m999),
     sep = "\t"

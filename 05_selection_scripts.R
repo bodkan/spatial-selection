@@ -17,7 +17,7 @@ locations_df <- dplyr::tribble(
   "Iberia",         -5,   40,
   "Central Europe", 10,   49,
   "Siberia",        75,   50,
-  "Near East",      40,    38
+  "Near East",      40,   38
 )
 
 # save the locations on a map of Europe
@@ -62,7 +62,7 @@ for (s in c(.001, .002, .003, .004, .005, .01, .02, .03, .04, .05)) {
 
       # save the SLiM scripts for running on the computing node
       run(
-        model, sim_length = 30000,
+        model, burnin = 1000, sim_length = time,
         recomb_rate = 0, seq_length = 1, # single locus
         max_interaction = max_interaction, spread = spread,
         output_prefix = file.path("results", prefix),

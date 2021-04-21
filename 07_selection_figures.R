@@ -10,26 +10,32 @@ coefs <- unique(gsub("results\\/.*selection_.*_s(.*)_time.*.tsv.gz", "\\1", file
 times <- unique(gsub("results\\/.*selection_.*_s.*_time(.*)_ind.*.tsv.gz", "\\1", files))
 locations <- unique(gsub("results\\/.*selection_(.*)_s.*.tsv.gz", "\\1", files))
 
-s <- "0.050"; t <- times[1]; loc <- "CentralEurope"
+s <- coefs[1]; t <- times[1]; loc <- locations[1]
 
 prefix <- sprintf("selection_%s_s%s_time%s", loc, s, t)
 f <- file.path("results/", paste0(prefix, "_ind_gt_locations.tsv.gz"))
 loc_df <- fread(f)
-loc_df[, gen := max(gen) - gen]
-loc_df[, time := gen * GEN_TIME]
-loc_df[, tblock := as.character(cut(time, breaks = seq(max(time), min(time), length.out = 20), dig.lab = 10))]
-loc_df[is.na(tblock), tblock := "0"]
 
-for (i in unique(loc_df$tblock)) {
-  pdf(file.path("figures", paste0(prefix, "_", as.numeric(i), ".pdf")), width = 12, height = 8)
+loc_df[, time := gen * GEN_TIME]
+
+all_times <- unique(loc_df$time)
+keep_times <- c(all_times[1], all_times[all_times %% 100 == 0])
+
+pdf(file.path("figures", paste0(prefix, ".pdf")), width = 12, height = 8)
+for (tslice in keep_times) {
   p <- ggplot() +
-    geom_point(data = loc_df[tblock == i & gt > 0], aes(x, y, color = "present"), alpha = 1, size = 2) +
-#    geom_point(data = loc_df[tblock == i & gt == 0], aes(x, y, color = "absent"), alpha = 0.2, size = 0.5) +
+    geom_point(data = loc_df[time == tslice & gt > 0],
+               aes(x, y, color = "present"), alpha = 1, size = 2) +
+    geom_point(data = loc_df[time == tslice & gt == 0],
+               aes(x, y, color = "absent"), alpha = 0.2, size = 1) +
     expand_limits(x = 0, y = 0) +
     theme_minimal() +
-    ggtitle(sprintf("origin: %s, selection coefficient: %s, time of origin: %s years ago", loc, s, t), subtitle = sprintf("time block: %s", i)) +
+    ggtitle(
+      sprintf("origin: %s, selection coefficient: %s, time of origin: %s years ago", loc, s, t),
+      subtitle = sprintf("time snapshot: %d", tslice)
+    ) +
     labs(x = "x [pixel]", y = "y [pixel]") +
     guides(color = guide_legend("mutation"))
   print(p)
-  dev.off()
 }
+dev.off()

@@ -55,7 +55,7 @@ for (s in c(.001, .002, .003, .004, .005, .01, .02, .03, .04, .05)) {
       # (provided by the spammer R package)
       selection_script <- script(
         system.file("extdata", "selection.slim", package = "spammr"), 
-        s = s, time = time,
+        s = s, time = time, min_freq = 0.25,
         coord = coord,
         origin = "pop"
       )

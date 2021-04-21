@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-parallel -j20 'slim {} > results/{/.}.log' ::: slim/selection_*.slim
+parallel -j30 'slim {} > results/{/.}.log' ::: slim/selection_*.slim

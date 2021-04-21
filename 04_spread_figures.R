@@ -2,7 +2,7 @@ library(data.table)
 library(ggplot2)
 
 # get locations of neutral simulation outputs
-list.files("results", "*.tsv.gz$", full.names = T)
+list.files("results", "neutral_.*.tsv.gz$", full.names = T)
 
 pdf(file.path("figures", "neutral_spread.pdf"), width = 12, height = 8)
 

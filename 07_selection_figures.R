@@ -10,7 +10,8 @@ coefs <- unique(gsub("results\\/.*selection_.*_s(.*)_time.*.tsv.gz", "\\1", file
 times <- unique(gsub("results\\/.*selection_.*_s.*_time(.*)_ind.*.tsv.gz", "\\1", files))
 locations <- unique(gsub("results\\/.*selection_(.*)_s.*.tsv.gz", "\\1", files))
 
-s <- coefs[1]; t <- times[1]; loc <- locations[1]
+i <- 1
+s <- coefs[i]; t <- times[i]; loc <- "CentralEurope"
 
 prefix <- sprintf("selection_%s_s%s_time%s", loc, s, t)
 f <- file.path("results/", paste0(prefix, "_ind_gt_locations.tsv.gz"))

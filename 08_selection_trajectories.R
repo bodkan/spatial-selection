@@ -30,21 +30,21 @@ traj_df[, origin_time := factor(
   levels = sort(as.integer(unique(origin_time)))
 )]
 
-pdf(file.path("figures", "selection_trajectories.pdf"))
+pdf(file.path("figures", "selection_trajectories.pdf"),
+    width = 12, height = 9))
 
-for (ymax in c(1.0, 0.25)) {
-  ggplot(traj_df, aes(time, frequency, color = s)) +
-    geom_line() +
-    coord_cartesian(ylim = c(0, ymax)) +
-    xlim(max(traj_df$time), 0) +
-    theme_minimal() +
-    facet_grid(origin_location ~ origin_time) +
-    labs(
-      title = "Frequency trajectories of beneficial alleles",
-      subtitle = "rows - locations of origin, columns - times of origin",
-      y = "allele frequency",
-      x = "time [years ago]"
-    ) %>% print()
-}
+p <- ggplot(traj_df, aes(time, frequency, color = s)) +
+  geom_line(aes(linetype = s < 0.01) +
+  coord_cartesian(ylim = c(0, 1.0)) +
+  xlim(max(traj_df$time), 0) +
+  theme_minimal() +
+  facet_grid(origin_location ~ origin_time) +
+  labs(
+    title = "Frequency trajectories of beneficial alleles",
+    subtitle = "rows - locations of origin, columns - times of origin",
+    y = "allele frequency",
+    x = "time [years ago]"
+  )
+print(p)
 
 dev.off()

@@ -5,6 +5,7 @@
 library(data.table)
 library(ggplot2)
 library(magrittr)
+library(parallel)
 
 GEN_TIME <- 30
 
@@ -13,7 +14,7 @@ files <- list.files("results", "selection_.*_ind_gt_locations.tsv.gz$", full.nam
 
 # read all simulated genotype tables and calculate allele frequency
 # trajectories
-traj_df <- lapply(files, function(f) {
+traj_df <- mclapply(files, function(f) {
   gt <- fread(f)
   # convert times to years and add columns with simulation parametersn
   gt[, time := gen * GEN_TIME]
@@ -22,7 +23,7 @@ traj_df <- lapply(files, function(f) {
   gt[, origin_location := gsub("^.*selection_(.*)_s.*.tsv.gz", "\\1", f)]
   # calculate allele frequency over time
   gt[, .(frequency = mean(gt)), by = .(time, s, origin_time, origin_location)]
-}) %>%
+}, mc.cores = 30) %>%
   do.call(rbind, .)
 
 traj_df[, origin_time := factor(
@@ -30,11 +31,10 @@ traj_df[, origin_time := factor(
   levels = sort(as.integer(unique(origin_time)))
 )]
 
-pdf(file.path("figures", "selection_trajectories.pdf"),
-    width = 12, height = 9))
+pdf(file.path("figures", "selection_trajectories.pdf"), width = 10, height = 7)
 
 p <- ggplot(traj_df, aes(time, frequency, color = s)) +
-  geom_line(aes(linetype = s < 0.01) +
+  geom_line() +
   coord_cartesian(ylim = c(0, 1.0)) +
   xlim(max(traj_df$time), 0) +
   theme_minimal() +
@@ -44,7 +44,8 @@ p <- ggplot(traj_df, aes(time, frequency, color = s)) +
     subtitle = "rows - locations of origin, columns - times of origin",
     y = "allele frequency",
     x = "time [years ago]"
-  )
+  ) +
+  guides(color = guide_legend(reverse = T))
 print(p)
 
 dev.off()

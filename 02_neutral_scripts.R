@@ -7,7 +7,7 @@
 
 library(spammr)
 
-model <- load("model-europe/")
+model <- read("model-europe/")
 
 # - max_distance is the parameter used in SLiM in this context:
 #     initializeInteractionType(1, "xy", reciprocal=T, maxDistance=<<here>>)

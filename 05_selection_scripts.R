@@ -9,7 +9,7 @@ library(sf)
 library(magrittr)
 library(ggplot2)
 
-model <- load("model-europe/")
+model <- read("model-europe/")
 
 # define locations of origin of beneficial mutations
 locations_df <- dplyr::tribble(
@@ -49,7 +49,7 @@ for (s in c(.001, .002, .003, .004, .005, .01, .02, .03, .04, .05)) {
       # convert geographic coordinates into pixel coordinates
       lon <- locations_df[i, ]$lon
       lat <- locations_df[i, ]$lat
-      coord <- convert(lat = lon, lon = lat, model)
+      coord <- convert(from = 4326, to = "raster", x = lon, y = lat, model = model)
 
       # substitute parameters into the selection script template
       # (provided by the spammer R package)

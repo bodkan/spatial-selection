@@ -3,7 +3,7 @@ library(data.table)
 library(ggplot2)
 library(sf)
 
-model <- load("model-europe/")
+model <- read("model-europe/")
 
 pdf(file.path("figures", "neutral_spread.pdf"), width = 12, height = 8)
 

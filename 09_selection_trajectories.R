@@ -7,17 +7,14 @@ library(ggplot2)
 library(magrittr)
 library(parallel)
 
-GEN_TIME <- 30
-
 # get locations of neutral simulation outputs
-files <- list.files("results", "selection_.*_ind_gt_locations.tsv.gz$", full.names = T)
+files <- list.files("results", "selection_.*_ind_gt_geolocations.tsv.gz$", full.names = T)
 
 # read all simulated genotype tables and calculate allele frequency
 # trajectories
 traj_df <- mclapply(files, function(f) {
-  gt <- fread(f)
+  gt <- fread(f, verbose = FALSE)
   # convert times to years and add columns with simulation parametersn
-  gt[, time := gen * GEN_TIME]
   gt[, s := gsub("^.*selection_.*_s(.*)_time.*.tsv.gz", "\\1", f)]
   gt[, origin_time := gsub("^.*selection_.*_s.*_time(.*)_ind.*.tsv.gz", "\\1", f)]
   gt[, origin_location := gsub("^.*selection_(.*)_s.*.tsv.gz", "\\1", f)]

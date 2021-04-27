@@ -10,8 +10,6 @@ library(magrittr)
 
 model <- read("model-europe/")
 
-GEN_TIME <- 30
-
 # maximum number of points to plot in each
 # mutation-present/mutation-absent category
 MAX_POINTS <- 1000
@@ -21,7 +19,6 @@ files <- list.files("results", "selection_.*_geolocations.tsv.gz$", full.names =
 for (f in files) {
   message("Processing ", f)
   loc_df <- fread(f)
-  loc_df[, time := gen * GEN_TIME]
 
   all_times <- unique(loc_df$time)
   keep_times <- unique(c(all_times[1],
@@ -63,7 +60,7 @@ for (f in files) {
 
     if (nrow(present_df) > 0) {
       p <- p + geom_point(data = present_df,
-                          aes(newx, newy, color = "present"), alpha = 1, size = 2)
+                          aes(lon, lat, color = "present"), alpha = 1, size = 2)
     } else {
       warning(sprintf("Problem in time slice %d in file %s\n", tslice, f))
     }
@@ -71,7 +68,7 @@ for (f in files) {
     # if an allele is fixed, there won't be any "absent" cases
     if (nrow(absent_df) > 0) {
       p <- p + geom_point(data = absent_df,
-                          aes(newx, newy, color = "absent"), alpha = 0.5, size = 1)
+                          aes(lon, lat, color = "absent"), alpha = 0.5, size = 1)
     }
 
     print(p)

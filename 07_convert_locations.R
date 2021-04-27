@@ -34,7 +34,9 @@ foreach (f = files) %dopar% {
     model = model, add = T
   )
 
+  names(loc_df) <- c("gen", "x", "y", "gt", "time", "lon", "lat")
+
   # save the processed locations to a different file
   output_file <- gsub("_locations.tsv.gz", "_geolocations.tsv.gz", f)
-  fwrite(loc_df, output_file, sep = "\t")
+  fwrite(loc_df[, .(gen, time, x, y, lon, lat, gt)], output_file, sep = "\t")
 }

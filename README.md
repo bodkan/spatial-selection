@@ -30,7 +30,7 @@ to generate simulated data for the projet as quickly as possible.
 The simulations were run across a grid of the following
 scenarios/parameters:
 
-- [location of origin](figures/selection_origin.pdf) of the beneficial allele: Iberia, Central Europe, Near East, Siberia
+- [location of origin](figures/selection_origins.pdf) of the beneficial allele: Iberia, Central Europe, Near East, Siberia
 - time of the introduction of the beneficial allele: 20, 15, 10, and 5 thousand years ago
 - selection coefficient: .001, .002, ..., .005 and .01, .02, ..., .05
 
@@ -66,7 +66,7 @@ Note that the files are gigantic - the population has 20,000 individual and I sa
 
 The directory `figures/` contains many diagnostic plots I generated from the simulations. Most notably:
 
-- `[figures/selection_origin.pdf](figures/selection_origin.pdf)` - where the beneficial allele was first introduced in different scenarios
-- `[figures/neutral_spread.pdf](figures/neutral_spread.pdf)` - very rough evaluation of the parameters influencing how well spread or "clumpy" the individuals are across their spatial range
+- [`figures/selection_origins.pdf`](figures/selection_origins.pdf) - where the beneficial allele was first introduced in different scenarios
+- [`figures/neutral_spread.pdf`](figures/neutral_spread.pdf) - very rough evaluation of the parameters influencing how well spread or "clumpy" the individuals are across their spatial range
 - `figures/selection_spread_*` - "animated" snapshots of the spread of the beneficial allele throughout the population over time (each file corresponds to one of the `results/selection_{location}_s{selection_coefficient}_time{time}_ind_gt_geolocations.tsv.gz` files described above)
 - 

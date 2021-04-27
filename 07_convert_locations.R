@@ -18,6 +18,16 @@ foreach (f = files) %dopar% {
   message("Processing ", f)
 
   loc_df <- fread(f)
+
+  # "fix" a bug with SLiM keeping and saving data in some generation
+  # from a previous incarnation before restarting due to allele loss
+  # (by discarding everything prior to the first saved time point)
+  gen_blocks <- rle(loc_df$gen < max(loc_df$gen))
+  if (gen_blocks$values[1])
+    loc_df <- loc_df[1:.N > gen_blocks$lengths[1]]
+
+  loc_df[, time := gen * model$gen_time]
+
   loc_df <- convert(
     coords = loc_df,
     from = "raster", to = "EPSG:4326",

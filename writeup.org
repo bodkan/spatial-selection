@@ -1,45 +1,67 @@
-In addition to drawing simulated samples from diffusion models
-described above <<<or below - wherever you'd like to have this
-section, probably somewhere near 3.2 Performance on simulations>>>, we
+#+options: author:nil date:nil toc:nil num:nil
+
+* Spatially-explicit forward simulations
+
+  In addition to drawing simulated samples from a diffusion model, we
 performed spatially explicit individual-based forward simulations of
 selection acting on a beneficially allele using a new simulation
-framework  [0].
+framework implemented in an R package /spannr/ [1]. This package makes
+it possible to define spatio-temporal population models on an R level
+and then feeds them into a forward population genetic simulator SLiM
+[2] for execution and generating genotype data.
 
-First, we established a boundary for a single population spread across
-a broader geographic region of Europe. In order to ensure a reasonably
-uniform distribution of individuals across this spatial range
-throughout the course of the forward simulation, we set the maximum
-distance for spatial competition and mating choice between individuals
-to 250 km, and the standard deviation of the normal distribution
-governing the spread of offspring from their parents at 25 km. We note
-that we have chosen the values of these parameters to ensure a roughly
-uniform spread of individuals across a simulated landscape at
-equilibrium [Figure A], and they do not necessarily represent realistic
-values of such parameters at a specific time in human history.
+First, we defined a spatial boundary for a population spread across a
+broader geographic region of Europe (/Figure X/). In order to ensure a
+reasonably uniform distribution of individuals across this spatial
+range throughout the course of the forward simulation, we set the
+maximum distance for spatial competition and mating choice between
+individuals to 250 km (translated, on a SLiM level, to the interaction
+parameter ~maxDistance~), and the standard deviation of the normal
+distribution governing the spread of offspring from their parents at
+25 km (leveraged in SLiM's ~modifyChild()~ callback function). We note
+that we have chosen the values of these parameters merely to ensure a
+uniform spread of individuals across a simulated landscape. We do not
+claim that these are realistic values of these parameters at any time
+in human history.
 
-After defining the spatial context of the simulations, we introduced a
-single beneficial additive mutation in four diffrent starting
-locations [Figure B] to study the spread of such allele depending on
-the geographic context of its origin. Furthermore, in each of the four
-scenarios, we varied the selection coefficient of the beneficial
-mutation (0.001, 0.002, ..., 0.005, and 0.01, 0.02, ..., 0.05) as well
-as the time of its first occurence (20, 15, 10, and 5 thousand years
-ago).
+After defining the spatial context of the simulations and ensuring the
+uniform spread of individuals across their population boundary, we
+introduced a single beneficial additive mutation in a single
+individual. To study the dynamics of the spread of such an allele
+depending on the geographic context of its origin, we simulated four
+scenarios in which the allele appeared in four different corners of
+West Eurasia (/Figure X/). In each of the four scenarios, we varied
+the selection coefficient of the beneficial mutation (/s/ = 0.001,
+0.002, ..., 0.005, and 0.01, 0.02, ..., 0.05) as well as the time of
+its first occurence (/t/ = 20000, 15000, 10000, and 5000 years ago).
 
-Throughout the course of each simulation, between the time of the
-introduction of the beneficial allele and the present, we tracked the
-position of each individual that ever lived, together with its
-location on a two-dimensional map, and its genotype (zero, one, or two
-copies of the allele). We then used this complete information about
-the spatial distribution of the beneficial allele in each time point
-to study the accuracy of our model in infering the parameters of
-interest.
+Over the course of each simulation, we tracked the position of each
+individual that ever lived together with its location on a
+two-dimensional map, as well as its genotype (/i.e./ zero, one, or two
+copies of the beneficial allele). We then used this complete
+information about the spatial distribution of the beneficial allele in
+each time point to study the accuracy of our model in infering the
+parameters of interest. <<< Or something like that - you might want to
+edit this to your liking >>>
 
 
+** References
 
-[0] Link to Github for now. If things go well, this could be replaced
-by a bioRxiv preprint in the final version of the paper.
+- [1] https://github.com/bodkan/spannr (If things go well, this could
+  be replaced by a bioRxiv preprint in the final version of your
+  paper.)
 
-Figure A:
-Figure B:
-Figure C:
+- [2] Haller, B.C., & Messer, P.W. (2019). SLiM 3: Forward genetic
+  simulations beyond the Wright–Fisher model. Molecular Biology and
+  Evolution 36(3), 632–637.
+
+** Figures
+
+- /Figure X/: This could be an abstract map of Europe with the
+  highlighted population boundary. It could also show 4 colorful dots
+  indicating the location where the beneficial allele was introduced
+  (maybe something like [[https://github.com/bodkan/spatial-selection/blob/main/figures/selection_origins.pdf][this]], with the population range added in?).
+
+- /Figure Y/: We could also show the temporal trajectories - to show
+  the reader that the simulation behave reasonably? So something like
+  [[https://github.com/bodkan/spatial-selection/blob/main/figures/selection_trajectories.pdf][this]].

@@ -48,8 +48,9 @@ for (f in files) {
         subtitle = sprintf("time snapshot: %d years ago (maximum %dk out of 20k individuals shown for each genotype category)", tslice, MAX_POINTS / 1000)
       ) +
       labs(x = "longitude", y = "latitude") +
-      guides(color = guide_legend("mutation")) +
-      scale_color_manual(values = c("black", "red"), labels = c("absent", "present"))
+      guides(color = guide_legend("genotype")) +
+      scale_color_manual(values = c("black", "blue", "red"),
+                         labels = c("0/0", "0/1", "1/1"), drop = FALSE)
     
     # there's a bug in SLiM output code which doesn't always save all
     # individuals in the first generation
@@ -60,7 +61,7 @@ for (f in files) {
 
     if (nrow(present_df) > 0) {
       p <- p + geom_point(data = present_df,
-                          aes(lon, lat, color = "present"), alpha = 1, size = 2)
+                          aes(lon, lat, color = factor(gt)), alpha = 0.75, size = 1)
     } else {
       warning(sprintf("Problem in time slice %d in file %s\n", tslice, f))
     }
@@ -68,7 +69,7 @@ for (f in files) {
     # if an allele is fixed, there won't be any "absent" cases
     if (nrow(absent_df) > 0) {
       p <- p + geom_point(data = absent_df,
-                          aes(lon, lat, color = "absent"), alpha = 0.5, size = 1)
+                          aes(lon, lat, color = "0/1"), alpha = 0.5, size = 1)
     }
 
     print(p)

@@ -31,8 +31,8 @@ for (f in files) {
 
   pdf_path <- basename(f) %>%
     gsub("^selection_", "selection_spread_", .) %>%
-    gsub("_ind_gt_locations.tsv.gz", "", .) %>%
-    paste0(".pdf") %>%
+    gsub("_ind_gt_geolocations.tsv.gz", "", .) %>%
+    paste0("_3colors.pdf") %>%
     file.path("figures", .)
 
   pdf(pdf_path, width = 12, height = 8)
